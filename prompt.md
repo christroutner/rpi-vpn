@@ -1,0 +1,1 @@
+I am running Ubuntu 20.04.5 LTS on a Raspberry Pi 4. I'm building a project in stages. In this first stage, I want to have the Pi connect to the internet over WiFi (wlan0). It should then share its internet connection with any computer plugged into its eth0 ethernet port.
