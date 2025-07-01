@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenVPN Client Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/openvpn --config /etc/openvpn/client.ovpn --script-security 2 --up /usr/local/bin/setup-vpn-routing-improved.sh
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target 

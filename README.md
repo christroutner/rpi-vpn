@@ -77,12 +77,90 @@ You'll need to rent a Virtual Private Server (VPS) from a cloud service provider
 
 ## Setup OpenVPN Client
 
-The Raspberry Pi is the VPN client in this setup. Run the following commands:
+The Raspberry Pi is the VPN client in this setup. This will route all traffic from devices connected to the Ethernet port through the VPN connection.
 
-- Install OpenVPN:
-  - `sudo apt update`
-  - `sudo apt install openvpn`
+### Automatic Setup (Recommended)
 
-- Start the VPN on the Raspberry Pi:
-  - `sudo openvpn --client --config client.ovpn`
+1. **Copy your OpenVPN client configuration file** to the Pi:
+   - Copy your `client.ovpn` file to the Pi (use scp or copy/paste)
+   - Make sure it's in the same directory as the setup script
+   - Copy the `openvpn-client.service` file to the same directory.
+
+2. **Run the automated setup script**:
+   ```bash
+   sudo chmod +x setup-vpn-client.sh
+   sudo ./setup-vpn-client.sh
+   ```
+
+3. **Start the VPN service**:
+   ```bash
+   sudo systemctl start openvpn-client.service
+   ```
+
+4. **Check the status**:
+   ```bash
+   sudo systemctl status openvpn-client.service
+   ```
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. **Install OpenVPN**:
+   ```bash
+   sudo apt update
+   sudo apt install openvpn
+   ```
+
+2. **Copy your client configuration**:
+   ```bash
+   sudo cp client.ovpn /etc/openvpn/
+   ```
+
+3. **Set up the routing script**:
+   ```bash
+   sudo chmod +x /usr/local/bin/setup-vpn-routing.sh
+   ```
+
+4. **Start OpenVPN with routing**:
+   ```bash
+   sudo openvpn --config /etc/openvpn/client.ovpn --script-security 2 --up /usr/local/bin/setup-vpn-routing.sh
+   ```
+
+### Testing the Setup
+
+1. **Connect a device** to the Pi's Ethernet port
+2. **Check if it gets an IP address** (should be in 192.168.4.x range)
+3. **Test internet connectivity** on the connected device
+4. **Verify VPN routing** by checking the device's public IP (should match your VPN server's location)
+
+### Troubleshooting
+
+If devices connected to the Ethernet port can't access the internet:
+
+1. **Run the quick fix script**:
+   ```bash
+   sudo chmod +x fix-vpn-routing.sh
+   sudo ./fix-vpn-routing.sh
+   ```
+
+2. **Run the troubleshooting script**:
+   ```bash
+   sudo chmod +x troubleshoot-vpn.sh
+   sudo ./troubleshoot-vpn.sh
+   ```
+
+3. **Manual checks**:
+   - **Check VPN status**: `sudo systemctl status openvpn-client.service`
+   - **View VPN logs**: `sudo journalctl -u openvpn-client.service -f`
+   - **Check routing**: `sudo iptables -t nat -L -v`
+   - **Test VPN interface**: `ip addr show tun0`
+   - **Check IP forwarding**: `cat /proc/sys/net/ipv4/ip_forward`
+   - **Restart service**: `sudo systemctl restart openvpn-client.service`
+
+4. **Common issues**:
+   - **IP forwarding disabled**: Run `echo 1 > /proc/sys/net/ipv4/ip_forward`
+   - **Missing iptables rules**: Run the routing script manually
+   - **DHCP server not running**: `sudo systemctl start isc-dhcp-server`
+   - **VPN interface not found**: Check OpenVPN configuration and connection
 
